@@ -136,7 +136,18 @@ function Game({onExit,playerName}){
   const targetBeam=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,5,10),new THREE.MeshBasicMaterial({color:0x16e4d1,transparent:true,opacity:.45}));targetBeam.position.set(-29,2.6,0);world.add(targetBeam);
   const label=addTextLabel(world,'WEB3 HUB',-29,5.2,0);
   const npcA=makeNpc(npcs,-35,-4,3),npcB=makeNpc(npcs,-21,4,2),npcC=makeNpc(npcs,32,32,0);
+  const npcActors=[npcA,npcB,npcC];
+  npcActors.forEach((n,i)=>{n.userData.home=n.position.clone();n.userData.phase=i*2.1;n.userData.speed=.45+i*.08});
   const carA=makeCar(cars,18,-14,0xd44f3e),carB=makeCar(cars,-15,32,0x1f7d8c);
+  const traffic=[];
+  const trafficColors=[0x1f7d8c,0xd39a61,0x6e7f79,0xb54b43,0x7d8fb3,0x9b8c69];
+  for(let i=0;i<10;i++){
+   const axis=i%2, lane=(Math.floor(i/2)%3-1)*29+(i%2?.9:-.9), start=-82+(i*17)%164;
+   const t=makeCar(cars,axis?lane:start,axis?start:lane,trafficColors[i%trafficColors.length]);
+   t.userData.traffic=true;t.userData.axis=axis;t.userData.direction=i%4<2?1:-1;t.userData.speed=4.5+(i%4)*.7;
+   if(axis)t.rotation.y=Math.PI/2;
+   traffic.push(t);
+  }
   const busStop=addTextLabel(props,'BUS STOP · '+(BUS_STOPS[0]?.[0]||'CITY'),7,3.4,8);
   const propsList=[];
   for(let i=0;i<12;i++){
@@ -181,6 +192,17 @@ function Game({onExit,playerName}){
   const clock=new THREE.Clock();let raf;
   const loop=()=>{
    raf=requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.04),now=performance.now();
+   traffic.forEach(t=>{
+    const dir=t.userData.direction,speed=t.userData.speed*dt;
+    if(t.userData.axis){t.position.z+=speed*dir;if(t.position.z>88)t.position.z=-88;if(t.position.z<-88)t.position.z=88}
+    else{t.position.x+=speed*dir;if(t.position.x>88)t.position.x=-88;if(t.position.x<-88)t.position.x=88}
+   });
+   npcActors.forEach((n,i)=>{
+    const h=n.userData.home,p=n.userData.phase||0,s=n.userData.speed||.5;
+    n.position.x=h.x+Math.sin(now/1800*s+p)*2.8;
+    n.position.z=h.z+Math.cos(now/2100*s+p)*2.2;
+    n.rotation.y=Math.atan2(Math.cos(now/2100*s+p),Math.cos(now/1800*s+p));
+   });
    if(startedRef.current&&!pausedRef.current&&!mapRef.current&&!dialogueRef.current&&!choiceRef.current){
     let dx=0,dz=0;if(keys.current.w||keys.current.arrowup)dz-=1;if(keys.current.s||keys.current.arrowdown)dz+=1;if(keys.current.a||keys.current.arrowleft)dx-=1;if(keys.current.d||keys.current.arrowright)dx+=1;
     const len=Math.hypot(dx,dz)||1;
@@ -206,7 +228,6 @@ function Game({onExit,playerName}){
     camera.position.lerp(new THREE.Vector3(focusX,vehicleMode.current?8:9,focusZ+15),.08);camera.lookAt(focusX,1,focusZ);
    }
    targetMarker.rotation.z+=dt*1.8;targetMarker.scale.setScalar(1+.1*Math.sin(now/240));targetBeam.scale.y=.8+.25*Math.sin(now/300);
-   [npcA,npcB,npcC].forEach((n,i)=>n.rotation.y=Math.sin(now/900+i)*.15);
    renderer.render(scene,camera);
   };loop();
   const observer=new MutationObserver(()=>resetWorldForMission(missionRef.current));observer.observe(el,{childList:true,subtree:false});
