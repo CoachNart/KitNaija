@@ -222,8 +222,13 @@ function Game({onExit,playerName}){
  };
 
  const openObjective=()=>{
-   if(vehicleMode.current){vehicleMode.current=false;setVehicleActive(false);if(vehicle.current){player.current.x=vehicle.current.position.x+2.5;player.current.z=vehicle.current.position.z;};say('Exited vehicle. Walk to the mission objective.');beep();return}
-   const idx=missionRef.current,[tx,tz]=[[ -29,0],[-18,29],[29,29],[0,-29],[18,-14]][idx%5];
+   if(vehicleMode.current){vehicleMode.current=false;setVehicleActive(false);if(vehicle.current){player.current.x=vehicle.current.position.x+2.5;player.current.z=vehicle.current.position.z;}say('Exited vehicle. Walk to the mission objective.');beep();return}
+   const car=vehicle.current;
+   if(car){
+     const carDistance=Math.hypot(player.current.x-car.position.x,player.current.z-car.position.z);
+     if(carDistance<7){vehicleMode.current=true;setVehicleActive(true);say('Vehicle entered. WASD drive · SPACE brake · E exit');beep();return}
+   }
+   const idx=missionRef.current,[tx,tz]=[[-29,0],[-18,29],[29,29],[0,-29],[18,-14]][idx%5];
    const d=Math.hypot(player.current.x-tx,player.current.z-tz);
    if(d>11){say('Follow the glowing marker to the mission objective.');beep('error');return}
    const type=currentObjective;
