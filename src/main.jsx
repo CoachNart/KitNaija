@@ -186,6 +186,7 @@ function Game({onExit,playerName}){
    applyState(idx);
   };
   resetWorldForMission(0);
+  scene.userData.resetMission=resetWorldForMission;
 
   const resize=()=>{camera.aspect=Math.max(el.clientWidth,1)/Math.max(el.clientHeight,1);camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight)};
   const down=e=>{
@@ -271,6 +272,7 @@ function Game({onExit,playerName}){
    finishStep();
  };
  useEffect(()=>{interactRef.current=openObjective},[currentObjective,current.steps.length,missionIndex,step,state.lesson]);
+ useEffect(()=>{const scene=sceneRef.current;if(scene?.userData?.resetMission)scene.userData.resetMission(missionIndex,step)},[missionIndex,step]);
  useEffect(()=>{const f=()=>interactRef.current();window.addEventListener('kit-interact',f);return()=>window.removeEventListener('kit-interact',f)},[]);
 
  const answer=(i)=>{
