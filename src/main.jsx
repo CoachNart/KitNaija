@@ -69,7 +69,7 @@ function addTextLabel(scene,text,x,y,z,accent=0x16e4d1){
  ctx.fillStyle='#06100eee';ctx.fillRect(0,0,512,128);ctx.strokeStyle='#16e4d1';ctx.strokeRect(3,3,506,122);
  ctx.fillStyle='#f0f5f2';ctx.font='bold 30px Arial';ctx.fillText(text,22,72);
  const tex=new THREE.CanvasTexture(c),m=new THREE.Mesh(new THREE.PlaneGeometry(5.4,1.35),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));
- m.position.set(x,y,z);scene.add(m);return m;
+ m.position.set(x,y,z);m.userData.setText=(next)=>{ctx.clearRect(0,0,512,128);ctx.fillStyle='#06100eee';ctx.fillRect(0,0,512,128);ctx.strokeStyle='#16e4d1';ctx.strokeRect(3,3,506,122);ctx.fillStyle='#f0f5f2';ctx.font='bold 30px Arial';ctx.fillText(next,22,72);tex.needsUpdate=true};scene.add(m);return m;
 }
 function beep(type='confirm'){
  try{
@@ -149,6 +149,9 @@ function Game({onExit,playerName}){
    traffic.push(t);
   }
   const busStop=addTextLabel(props,'BUS STOP · '+(BUS_STOPS[0]?.[0]||'CITY'),7,3.4,8);
+  const districtLabel=addTextLabel(props,'MISSION DISTRICT',7,5.1,8);
+  const objectiveProp=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,1.8,12),new THREE.MeshStandardMaterial({color:0x16e4d1,emissive:0x063d37,emissiveIntensity:1.4}));
+  objectiveProp.position.set(-29,.9,0);objectiveProp.castShadow=true;props.add(objectiveProp);
   const propsList=[];
   for(let i=0;i<12;i++){
    const pole=new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,3.6,8),new THREE.MeshStandardMaterial({color:0x303c39}));
@@ -169,12 +172,16 @@ function Game({onExit,playerName}){
   };
   const sunColor=new THREE.Color(0xffdfae);sun.color.copy(sunColor);applyState(0);
 
-  const getTarget=(idx)=>{
-   const a=idx%5;
-   return [[-29,0],[-18,29],[29,29],[0,-29],[18,-14]][a];
+  const getObjectiveTarget=(idx,objectiveStep=0)=>{
+   const route=[[-29,0],[-18,29],[29,29],[0,-29],[18,-14]];
+   const base=route[idx%route.length],offsets=[[0,0],[7,-6],[-7,6],[0,0]];
+   const o=offsets[Math.min(objectiveStep,offsets.length-1)];return [base[0]+o[0],base[1]+o[1]];
   };
-  const resetWorldForMission=(idx)=>{
-   const [tx,tz]=getTarget(idx);targetMarker.position.set(tx,.12,tz);targetBeam.position.set(tx,2.6,tz);label.position.set(tx,5.2,tz);
+  const resetWorldForMission=(idx,objectiveStep=stepRef.current)=>{
+   const [tx,tz]=getObjectiveTarget(idx,objectiveStep);targetMarker.position.set(tx,.12,tz);targetBeam.position.set(tx,2.6,tz);label.position.set(tx,5.2,tz);objectiveProp.position.set(tx,.9,tz);
+   const stop=BUS_STOPS.find(s=>s[1]===STATES[idx].name)||[STATES[idx].district,STATES[idx].name];
+   busStop.userData.setText('BUS STOP · '+stop[0].toUpperCase());busStop.position.set(tx+5,3.4,tz+5);
+   districtLabel.userData.setText(STATES[idx].city.toUpperCase()+' · '+STATES[idx].district.toUpperCase());districtLabel.position.set(tx+5,5.1,tz+5);
    npcA.position.set(tx-6,0,tz-4);npcB.position.set(tx+7,0,tz+4);npcC.position.set(tx+5,0,tz-7);
    applyState(idx);
   };
@@ -249,7 +256,7 @@ function Game({onExit,playerName}){
      const carDistance=Math.hypot(player.current.x-car.position.x,player.current.z-car.position.z);
      if(carDistance<7){vehicleMode.current=true;setVehicleActive(true);say('Vehicle entered. WASD drive · SPACE brake · E exit');beep();return}
    }
-   const idx=missionRef.current,[tx,tz]=[[-29,0],[-18,29],[29,29],[0,-29],[18,-14]][idx%5];
+   const idx=missionRef.current,[tx,tz]=getObjectiveTarget(idx,stepRef.current);
    const d=Math.hypot(player.current.x-tx,player.current.z-tz);
    if(d>11){say('Follow the glowing marker to the mission objective.');beep('error');return}
    const type=currentObjective;
