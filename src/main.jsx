@@ -246,9 +246,9 @@ function Game({onExit,playerName}){
  useEffect(()=>{const f=()=>interactRef.current();window.addEventListener('kit-interact',f);return()=>window.removeEventListener('kit-interact',f)},[]);
 
  const answer=(i)=>{
-   if(!choiceRef.current)return;
-   if(i===choice.answer){setChoice(null);say(choice.explain);finishStep();beep('confirm')}
-   else{setChoice(null);say('Not quite. Read the lesson and try the safe choice.');beep('error')}
+   const active=choiceRef.current;if(!active)return;
+   if(i===active.answer){const explanation=active.explain;choiceRef.current=null;setChoice(null);say(explanation||'Correct.');finishStep();beep('confirm')}
+   else{choiceRef.current=null;setChoice(null);say('Not quite. Read the lesson and try the safe choice.');beep('error')}
  };
  const jumpToState=(i)=>{setMissionIndex(i);missionRef.current=i;setStep(0);stepRef.current=0;setMapOpen(false);dialogueRef.current=null;choiceRef.current=null;setDialogue(null);setChoice(null);say(`${STATES[i].name} · ${STATES[i].city} selected`)};
  const toggleVehicle=()=>{
