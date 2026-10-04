@@ -86,7 +86,7 @@ function Game({onExit,playerName}){
  const stateRef=useRef(0),missionRef=useRef(0),stepRef=useRef(0),startedRef=useRef(false),pausedRef=useRef(false),mapRef=useRef(false);
  const interactRef=useRef(()=>{}),toastTimer=useRef(null),sceneRef=useRef(null);
  const [started,setStarted]=useState(false),[paused,setPaused]=useState(false),[missionIndex,setMissionIndex]=useState(0),[step,setStep]=useState(0),[xp,setXp]=useState(0),[mapOpen,setMapOpen]=useState(false);
- const [dialogue,setDialogue]=useState(null),[choice,setChoice]=useState(null),[vehicleActive,setVehicleActive]=useState(false),[toast,setToast]=useState('');
+ const [dialogue,setDialogue]=useState(null),[choice,setChoice]=useState(null),[vehicleActive,setVehicleActive]=useState(false),[toast,setToast]=useState('');\n const dialogueRef=useRef(null),choiceRef=useRef(null);
  const current=ALL_MISSIONS[missionIndex],state=STATES[missionIndex];
  const currentObjective=useMemo(()=>{
    const kind=current.kind;
@@ -181,7 +181,7 @@ function Game({onExit,playerName}){
   const clock=new THREE.Clock();let raf;
   const loop=()=>{
    raf=requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.04),now=performance.now();
-   if(startedRef.current&&!pausedRef.current&&!mapRef.current&&!dialogue&& !choice){
+   if(startedRef.current&&!pausedRef.current&&!mapRef.current&&!dialogueRef.current&&!choiceRef.current){
     let dx=0,dz=0;if(keys.current.w||keys.current.arrowup)dz-=1;if(keys.current.s||keys.current.arrowdown)dz+=1;if(keys.current.a||keys.current.arrowleft)dx-=1;if(keys.current.d||keys.current.arrowright)dx+=1;
     const len=Math.hypot(dx,dz)||1;
     if(vehicleMode.current&&vehicle.current){
@@ -236,7 +236,7 @@ function Game({onExit,playerName}){
      const npc=NPC_TYPES[idx%NPC_TYPES.length];setDialogue({name:npc.name,role:npc.role,text:npc.lines[stepRef.current%npc.lines.length]||'Welcome to KitNaija.',step:stepRef.current});return;
    }
    if(type==='choice'){
-     const q=QUIZZES[(state.lesson||'wallets')];setChoice({q,...q,step:stepRef.current});return;
+     const q=QUIZZES[(state.lesson||'wallets')]||QUIZZES.wallets;const next={...q,step:stepRef.current};choiceRef.current=next;setChoice(next);return;
    }
    if(type==='collect'){finishStep();say('Item collected. Keep moving.');return}
    if(type==='deliver'){finishStep();return}
@@ -246,11 +246,11 @@ function Game({onExit,playerName}){
  useEffect(()=>{const f=()=>interactRef.current();window.addEventListener('kit-interact',f);return()=>window.removeEventListener('kit-interact',f)},[]);
 
  const answer=(i)=>{
-   if(!choice)return;
+   if(!choiceRef.current)return;
    if(i===choice.answer){setChoice(null);say(choice.explain);finishStep();beep('confirm')}
    else{setChoice(null);say('Not quite. Read the lesson and try the safe choice.');beep('error')}
  };
- const jumpToState=(i)=>{setMissionIndex(i);missionRef.current=i;setStep(0);stepRef.current=0;setMapOpen(false);setDialogue(null);setChoice(null);say(`${STATES[i].name} · ${STATES[i].city} selected`)};
+ const jumpToState=(i)=>{setMissionIndex(i);missionRef.current=i;setStep(0);stepRef.current=0;setMapOpen(false);dialogueRef.current=null;choiceRef.current=null;setDialogue(null);setChoice(null);say(`${STATES[i].name} · ${STATES[i].city} selected`)};
  const toggleVehicle=()=>{
    if(!started)return;
    if(vehicleMode.current){openObjective();return}
@@ -279,7 +279,7 @@ function Game({onExit,playerName}){
    <div className="controls"><span>WASD</span> MOVE <span>SHIFT</span> RUN <span>E / SPACE</span> ACTION <span>M</span> MAP <span>ESC</span> PAUSE</div>
    {toast&&<div className="toast">{toast}</div>}
    {mapOpen&&<div className="state-map"><div className="map-head"><div><div className="eyebrow">NATIONAL MAP</div><h2>37 CHAPTERS. ONE JOURNEY.</h2><p>Every state has a city setting, local transport reference and Web3 lesson.</p></div><button onClick={()=>setMapOpen(false)}>CLOSE</button></div><div className="state-grid">{STATES.map((s,i)=><button key={s.name} className={i===missionIndex?'selected':i<missionIndex?'visited':''} onClick={()=>jumpToState(i)}><span>{String(i+1).padStart(2,'0')}</span><b>{s.name}</b><small>{s.city} · {s.lesson}</small></button>)}</div></div>}
-   {dialogue&&<div className="dialogue"><div className="dialogue-role">{dialogue.role.toUpperCase()}</div><h3>{dialogue.name}</h3><p>{dialogue.text}</p><button className="primary" onClick={()=>{setDialogue(null);finishStep()}}>CONTINUE <span>ENTER</span></button></div>}
+   {dialogue&&<div className="dialogue"><div className="dialogue-role">{dialogue.role.toUpperCase()}</div><h3>{dialogue.name}</h3><p>{dialogue.text}</p><button className="primary" onClick={()=>{dialogueRef.current=null;setDialogue(null);finishStep()}}>CONTINUE <span>ENTER</span></button></div>}
    {choice&&<div className="choice"><div className="eyebrow">MISSION CHECK</div><h3>{choice.q}</h3><div className="choice-list">{choice.options.map((o,i)=><button key={o} onClick={()=>answer(i)}><span>{String.fromCharCode(65+i)}</span>{o}</button>)}</div></div>}
    {paused&&<div className="pause"><h1>PAUSED</h1><p>Your progress is safe. Pick up exactly where you stopped.</p><button className="primary" onClick={()=>setPaused(false)}>CONTINUE</button></div>}
    <button className="exit" onClick={onExit}>EXIT CITY</button>
