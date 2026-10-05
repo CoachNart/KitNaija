@@ -86,7 +86,8 @@ function Game({onExit,playerName}){
  const stateRef=useRef(0),missionRef=useRef(0),stepRef=useRef(0),startedRef=useRef(false),pausedRef=useRef(false),mapRef=useRef(false);
  const interactRef=useRef(()=>{}),toastTimer=useRef(null),sceneRef=useRef(null);
  const [started,setStarted]=useState(false),[paused,setPaused]=useState(false),[missionIndex,setMissionIndex]=useState(0),[step,setStep]=useState(0),[xp,setXp]=useState(0),[mapOpen,setMapOpen]=useState(false);
- const [dialogue,setDialogue]=useState(null),[choice,setChoice]=useState(null),[vehicleActive,setVehicleActive]=useState(false),[toast,setToast]=useState('');\n const dialogueRef=useRef(null),choiceRef=useRef(null);
+ const [dialogue,setDialogue]=useState(null),[choice,setChoice]=useState(null),[vehicleActive,setVehicleActive]=useState(false),[toast,setToast]=useState('');
+ const dialogueRef=useRef(null),choiceRef=useRef(null);
  const current=ALL_MISSIONS[missionIndex],state=STATES[missionIndex];
  const currentObjective=useMemo(()=>{
    const kind=current.kind;
