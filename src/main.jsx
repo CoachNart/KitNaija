@@ -337,6 +337,16 @@ function Game({onExit,playerName}){
     <button className="secondary" onClick={toggleVehicle}>{vehicleActive?'EXIT VEHICLE':'ENTER VEHICLE'} <span>E</span></button>
    </div>
    <div className="controls"><span>WASD</span> MOVE <span>SHIFT</span> RUN <span>E / SPACE</span> ACTION <span>M</span> MAP <span>ESC</span> PAUSE</div>
+   <div className="mobile-controls" aria-label="Touch controls">
+    <div className="touch-pad">
+     <button onTouchStart={()=>keys.current.w=true} onTouchEnd={()=>keys.current.w=false} onTouchCancel={()=>keys.current.w=false}>▲</button>
+     <div><button onTouchStart={()=>keys.current.a=true} onTouchEnd={()=>keys.current.a=false} onTouchCancel={()=>keys.current.a=false}>◀</button><button onTouchStart={()=>keys.current.s=true} onTouchEnd={()=>keys.current.s=false} onTouchCancel={()=>keys.current.s=false}>▼</button><button onTouchStart={()=>keys.current.d=true} onTouchEnd={()=>keys.current.d=false} onTouchCancel={()=>keys.current.d=false}>▶</button></div>
+    </div>
+    <div className="touch-actions">
+     <button onTouchStart={()=>interactRef.current()} onTouchEnd={()=>{}}>ACTION</button>
+     <button onTouchStart={()=>setMapOpen(v=>!v)}>MAP</button>
+    </div>
+   </div>
    {toast&&<div className="toast">{toast}</div>}
    {mapOpen&&<div className="state-map"><div className="map-head"><div><div className="eyebrow">NATIONAL MAP</div><h2>37 CHAPTERS. ONE JOURNEY.</h2><p>Every state has a city setting, local transport reference and Web3 lesson.</p></div><button onClick={()=>setMapOpen(false)}>CLOSE</button></div><div className="state-grid">{STATES.map((s,i)=><button key={s.name} className={i===missionIndex?'selected':i<missionIndex?'visited':''} onClick={()=>jumpToState(i)}><span>{String(i+1).padStart(2,'0')}</span><b>{s.name}</b><small>{s.city} · {s.lesson}</small></button>)}</div></div>}
    {dialogue&&<div className="dialogue"><div className="dialogue-role">{dialogue.role.toUpperCase()}</div><h3>{dialogue.name}</h3><p>{dialogue.text}</p><button className="primary" onClick={()=>{dialogueRef.current=null;setDialogue(null);finishStep()}}>CONTINUE <span>ENTER</span></button></div>}
