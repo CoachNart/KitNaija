@@ -68,14 +68,6 @@ function addLoadedModel(parent,source,targetHeight){
  },undefined,()=>{parent.userData.modelFailed=true});
 }
 function makeCar(scene,x,z,color){
- const spec=NPC_TYPES[typeIndex%NPC_TYPES.length],g=new THREE.Group();
- const body=new THREE.Mesh(new THREE.CapsuleGeometry(.42,.9,4,8),new THREE.MeshStandardMaterial({color:spec.color,roughness:.82}));
- body.position.y=.9;body.castShadow=true;g.add(body);
- const head=new THREE.Mesh(new THREE.SphereGeometry(.34,14,10),new THREE.MeshStandardMaterial({color:0x70432f,roughness:.9}));
- head.position.y=1.62;head.castShadow=true;g.add(head);
- g.position.set(x,0,z);g.userData={name:spec.name,role:spec.role,lines:spec.lines};scene.add(g);return g;
-}
-function makeCar(scene,x,z,color){
  const g=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color,roughness:.58,metalness:.08});
  const base=new THREE.Mesh(new THREE.BoxGeometry(2.5,.62,4.5),paint);base.position.y=.58;base.castShadow=true;g.add(base);
  const cabin=new THREE.Mesh(new THREE.BoxGeometry(2,.62,2),new THREE.MeshStandardMaterial({color:0x182021,metalness:.2,roughness:.3}));cabin.position.y=1.06;cabin.position.z=-.18;g.add(cabin);
