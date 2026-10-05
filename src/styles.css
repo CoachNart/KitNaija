@@ -94,3 +94,20 @@
  .start-overlay p{display:none}
  .start-overlay .primary{margin-top:8px}
 }
+
+.mobile-controls{display:none}
+@media(max-width:800px){
+ .mobile-controls{display:flex;position:absolute;inset:0;pointer-events:none;z-index:20;justify-content:space-between;align-items:flex-end;padding:0 12px 14px}
+ .touch-pad,.touch-actions{pointer-events:auto}
+ .touch-pad{width:132px}
+ .touch-pad>button,.touch-pad>div{display:flex;justify-content:center}
+ .touch-pad button,.touch-actions button{width:42px;height:42px;margin:2px;border:1px solid #ffffff2b;background:#07100fb8;color:#f2f6f4;border-radius:9px;font-size:16px;backdrop-filter:blur(6px);touch-action:none;-webkit-user-select:none;user-select:none}
+ .touch-pad button:active,.touch-actions button:active{background:#16e4d1;color:#03100e}
+ .touch-actions{display:flex;gap:6px;align-items:flex-end}
+ .touch-actions button{width:58px;height:48px;font-size:8px;font-weight:800;letter-spacing:.08em}
+}
+@media(orientation:landscape) and (max-width:900px){
+ .mobile-controls{padding-bottom:8px}
+ .touch-pad button{width:36px;height:36px}
+ .touch-actions button{width:54px;height:40px}
+}
